@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nota_app/components/home/custom_bottom_bar.dart';
 import 'package:nota_app/components/home/product_list.dart';
-import 'package:nota_app/components/profile/page.dart';
+import 'package:nota_app/components/print/transaction_page.dart';
+import 'package:nota_app/components/profile/profile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,7 +41,10 @@ class _HomePageState extends State<HomePage> {
           child: FloatingActionButton(
             onPressed: () {
               print('Tombol tengah ditekan');
-              // Navigator.pushNamed(context, '/print');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TransactionPage()),
+              );
             },
             child: Icon(Icons.print, size: 35),
             backgroundColor: Color(0xFF758F44),

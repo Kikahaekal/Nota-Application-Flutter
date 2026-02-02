@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nota_app/components/home/page.dart';
+import 'package:nota_app/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,8 +11,55 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService(); // Panggil Service
 
   bool _isObscure = true;
+  bool _isLoading = false;
+
+  void _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Email dan Password tidak boleh kosong"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Container(
               width: 260,
               height: 260,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration( // Tambahkan const
                 shape: BoxShape.circle,
                 color: Color(0x59E3E566),
               ),
@@ -53,10 +100,11 @@ class _LoginPageState extends State<LoginPage> {
               height: 320,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(50),
-                color: Color(0x59E3E566),
+                color: const Color(0x59E3E566),
               ),
             ),
           ),
+
           SafeArea(
             child: Align(
               alignment: const Alignment(0, -0.58),
@@ -83,9 +131,9 @@ class _LoginPageState extends State<LoginPage> {
                         const Text(
                           "Email",
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black87
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black87
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -95,11 +143,10 @@ class _LoginPageState extends State<LoginPage> {
                           decoration: InputDecoration(
                             filled: true,
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 12
+                                vertical: 10,
+                                horizontal: 12
                             ),
-                            // fillColor: Colors.amber.withValues(alpha: 0.26),
-                            fillColor: Color(0x80E3E566),
+                            fillColor: const Color(0x80E3E566),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
                               borderSide: BorderSide.none,
@@ -126,11 +173,10 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: _isObscure,
                           decoration: InputDecoration(
                             filled: true,
-                            // fillColor: Colors.amber.withValues(alpha: 0.26),
-                            fillColor: Color(0x80E3E566),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 12
+                            fillColor: const Color(0x80E3E566),
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 12
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
@@ -164,15 +210,14 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HomePage(),
-                            ),
-                          );
-                        },
-                        child: const Text(
+                        onPressed: _isLoading ? null : _handleLogin,
+                        child: _isLoading
+                            ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                        )
+                            : const Text(
                           "Login",
                           style: TextStyle(
                             fontSize: 16,
